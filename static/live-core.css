@@ -53,14 +53,105 @@
     resize: none;
 }
 
-.sympy-live-toolbar {
-    margin: 5px 0 0 0;
-}
-
-.sympy-live-toolbar > * {
-    margin-left: 0.5em;
-}
-
 .sympy-live-processing {
     background-image: url("/static/spinner.gif");
+}
+
+.sympy-live-toolbar {
+    margin: 10px 0 0 0;
+}
+
+.sympy-live-separator {
+    width: 5px;
+    color: transparent;
+    display: inline-block;
+}
+
+.sympy-live-button {
+    position: relative;
+    cursor: default;
+    outline: none;
+    font-weight: bold;
+    text-align: center;
+    padding: 4px 8px;
+    margin-right: 5px;
+    color: #555;
+    border: 1px solid #dcdcdc;
+    background-color: #f8f8f8;
+    -webkit-border-radius: 2px;
+    -moz-border-radius: 2px;
+    border-radius: 2px;
+    -webkit-user-select: none;
+}
+
+.sympy-live-button:hover {
+    color: #333;
+    border: 1px solid #c6c6c6;
+    background-image: -webkit-gradient(linear, left top, left bottom, from(#f8f8f8), to(#eaeaea));
+    background-image: -webkit-linear-gradient(top, #f8f8f8, #eaeaea);
+    background-image: -moz-linear-gradient(top, #f8f8f8, #eaeaea);
+    background-image: -ms-linear-gradient(top, #f8f8f8, #eaeaea);
+    background-image: -o-linear-gradient(top, #f8f8f8, #eaeaea);
+    background-image: linear-gradient(top, #f8f8f8, #eaeaea);
+}
+
+.sympy-live-button.sympy-live-selected,
+.sympy-live-button:active {
+    -webkit-box-shadow: inset 1px 1px 3px #bbb;
+    -moz-box-shadow: inset 1px 1px 3px #bbb;
+    -ms-box-shadow: inset 1px 1px 3px #bbb;
+    -o-box-shadow: inset 1px 1px 3px #bbb;
+    box-shadow: inset 1px 1px 3px #bbb;
+}
+
+.sympy-live-button:active,
+.sympy-live-button:focus {
+    border: 1px solid #4d90fe;
+}
+
+.sympy-live-button-arrow {
+    position: relative;
+    top: -2px;
+    width: 0;
+    height: 0;
+    margin-left: 5px;
+    border-left: 4px solid transparent;
+    border-right: 4px solid transparent;
+    border-top: 4px solid #555;
+    display: inline-block;
+}
+
+.sympy-live-button:hover .sympy-live-button-arrow {
+    border-top-color: #333;
+}
+
+.sympy-live-options {
+    top: 0;
+    left: 0;
+    position: absolute;
+    visibility: hidden;
+    outline: none;
+    display: inline-block;
+    background-color: white;
+    border: 1px solid #dcdcdc;
+    -webkit-box-shadow: 1px 1px 3px #bbb;
+    -moz-box-shadow: 1px 1px 3px #bbb;
+    -ms-box-shadow: 1px 1px 3px #bbb;
+    -o-box-shadow: 1px 1px 3px #bbb;
+    box-shadow: 1px 1px 3px #bbb;
+}
+
+.sympy-live-options > div {
+    color: #555;
+    cursor: default;
+    padding: 5px 50px 5px 5px;
+}
+
+.sympy-live-options > div:hover {
+    color: #333;
+    background-color: #eee;
+}
+
+.sympy-live-options > div.sympy-live-selected {
+    font-weight: bold;
 }

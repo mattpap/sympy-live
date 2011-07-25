@@ -157,6 +157,10 @@ SymPy.Shell = Ext.extend(Ext.util.Observable, {
         return null;
     },
 
+    initSelectionSupport: function() {
+        this.supportsSelection = ('selectionStart' in this.promptEl.dom);
+    },
+
     render: function(el) {
         el = Ext.get(el) || Ext.getBody();
 
@@ -187,6 +191,7 @@ SymPy.Shell = Ext.extend(Ext.util.Observable, {
             spellcheck: 'false'
         }, true);
 
+        this.initSelectionSupport();
         this.renderToolbar(el);
 
         this.caretEl.on("focus", function(event) {
@@ -203,14 +208,6 @@ SymPy.Shell = Ext.extend(Ext.util.Observable, {
             }
         }, this);
 
-        this.evaluateEl.on("click", function(event) {
-            this.evaluate();
-        }, this);
-
-        this.clearEl.on("click", function(event) {
-            this.clear();
-        }, this);
-
         this.promptEl.focus();
 
         var task = {
@@ -223,86 +220,177 @@ SymPy.Shell = Ext.extend(Ext.util.Observable, {
         runner.start(task);
     },
 
-    renderToolbar: function(el) {
-        this.toolbarEl = Ext.DomHelper.append(el, {
-            tag: 'p',
-            cls: 'sympy-live-toolbar',
-            children: [{
-                tag: 'button',
-                html: 'Evaluate'
-            }, {
-                tag: 'button',
-                html: 'Clear'
-            }, {
-                tag: 'span',
-                cls: 'sympy-live-separator',
-                html: '|'
-            }, {
-                tag: 'select',
-                children: [{
-                    tag: 'option',
-                    value: 'repr',
-                    html: 'Repr'
-                }, {
-                    tag: 'option',
-                    value: 'str',
-                    html: 'Str'
-                }, {
-                    tag: 'option',
-                    value: 'ascii',
-                    html: 'ASCII'
-                }, {
-                    tag: 'option',
-                    value: 'unicode',
-                    html: 'Unicode'
-                }, {
-                    tag: 'option',
-                    value: 'latex',
-                    html: 'LaTeX'
-                }]
-            }, {
-                tag: 'span',
-                cls: 'sympy-live-separator',
-                html: '|'
-            }, {
-                tag: 'select',
-                children: [{
-                    tag: 'option',
-                    value: 'enter',
-                    html: 'Enter'
-                }, {
-                    tag: 'option',
-                    value: 'shift-enter',
-                    html: 'Shift-Enter'
-                }]
-            }, {
-                tag: 'span',
-                html: 'submits'
-            }, {
-                tag: 'span',
-                cls: 'sympy-live-separator',
-                html: '|'
-            }, {
-                tag: 'span',
-                html: 'Ctrl-Up/Down for history'
-            }]
+    addButton: function(el, config) {
+        config = config || {};
+
+        var button = Ext.DomHelper.append(el, {
+            tag: 'span',
+            cls: 'sympy-live-button',
+            tabIndex: '0'
         }, true);
 
-        this.supportsSelection = ('selectionStart' in this.promptEl.dom);
+        if (config.image) {
+            Ext.DomHelper.append(button, {
+                tag: 'img',
+                cls: 'sympy-live-button-image',
+                src: config.image
+            });
+        }
 
-        this.evaluateEl = this.toolbarEl.down('button:nth(1)');
-        this.clearEl = this.toolbarEl.down('button:nth(2)');
+        if (config.title) {
+            Ext.DomHelper.append(button, {
+                tag: 'span',
+                cls: 'sympy-live-button-title',
+                html: config.title
+            });
+        }
 
-        this.printerEl = this.toolbarEl.down('select:nth(1)');
-        this.submitEl = this.toolbarEl.down('select:nth(2)');
+        if (config.dropdown) {
+            Ext.DomHelper.append(button, {
+                tag: 'span',
+                cls: 'sympy-live-button-arrow'
+            });
+        }
 
-        var index;
+        if (config.fn) {
+            button.on('click', config.fn, config.scope || this);
+        }
 
-        index = this.printerTypes.indexOf(this.printer);
-        this.printerEl.dom.selectedIndex = index;
+        return button;
+    },
 
-        index = this.submitTypes.indexOf(this.submit);
-        this.submitEl.dom.selectedIndex = index;
+    addDropdown: function(el, config) {
+        config = config || {};
+
+        var selected;
+
+        if (Ext.isNumber(config.selected)) {
+            selected = config.selected;
+        } else {
+            selected = 0;
+        }
+
+        var options = Ext.DomHelper.append(Ext.getBody(), {
+            tag: 'div',
+            cls: 'sympy-live-options',
+            tabIndex: '0'
+        }, true);
+
+        var title = config.items[selected].text;
+        var cls = 'sympy-live-selected';
+
+        var button = this.addButton(el, {
+            title: title,
+            dropdown: true,
+            fn: function(event) {
+                if (!options.isVisible()) {
+                    button.addClass(cls);
+
+                    var top = button.getTop() + button.getHeight();
+                    var height = options.getHeight();
+
+                    if (top + height - window.pageYOffset > window.innerHeight) {
+                        top = button.getTop() - height;
+                    }
+
+                    options.setTop(top);
+                    options.setLeft(button.getLeft());
+
+                    options.show();
+                    options.focus();
+                }
+            },
+            scope: this
+        });
+
+        options.on('blur', function(event) {
+            if (options.isVisible()) {
+                options.hide();
+                button.removeClass(cls);
+            }
+        }, this);
+
+        Ext.each(config.items, function(item, index) {
+            var el = Ext.DomHelper.append(options, {
+                tag: 'div',
+                html: item.text
+            }, true);
+
+            if (index == selected) {
+                el.addClass(cls);
+            }
+
+            el.on('click', function(event) {
+                event.stopEvent();
+                options.hide();
+                options.child('.' + cls).removeClass(cls);
+                el.addClass(cls);
+                button.removeClass(cls);
+                button.child('.sympy-live-button-title').dom.innerHTML = item.text;
+                config.fn.call(config.scope || this, item.value);
+            }, this);
+        }, this);
+
+        return button;
+    },
+
+    addSeparator: function(el) {
+        Ext.DomHelper.append(el, {
+            tag: 'span',
+            cls: 'sympy-live-separator'
+        });
+    },
+
+    renderToolbar: function(el) {
+        this.toolbarEl = Ext.DomHelper.append(el, {
+            tag: 'div',
+            cls: 'sympy-live-toolbar',
+        }, true);
+
+        this.evaluateEl = this.addButton(this.toolbarEl, {
+            title: 'Evaluate',
+            fn: function(event) {
+                this.evaluate();
+            },
+            scope: this
+        });
+
+        this.clearEl = this.addButton(this.toolbarEl, {
+            title: 'Clear',
+            fn: function(event) {
+                this.clear();
+            },
+            scope: this
+        });
+
+        this.addSeparator(this.toolbarEl);
+
+        this.addDropdown(this.toolbarEl, {
+            selected: this.printerTypes.indexOf(this.printer),
+            items: [
+                { value: 'repr', text: 'Repr' },
+                { value: 'str', text: 'Str' },
+                { value: 'ascii', text: 'ASCII' },
+                { value: 'unicode', text: 'Unicode' },
+                { value: 'latex', text: 'LaTeX' }
+            ],
+            fn: function(value) {
+                this.printer = value;
+            },
+            scope: this
+        });
+
+        this.addDropdown(this.toolbarEl, {
+            selected: this.submitTypes.indexOf(this.submit),
+            items: [
+                { value: 'enter', text: 'Enter' },
+                { value: 'shift-enter', text: 'Shift-Enter' }
+            ],
+            fn: function(value) {
+                this.submit = value;
+            },
+            scope: this
+        });
     },
 
     getKeyEvent: function() {
@@ -336,7 +424,7 @@ SymPy.Shell = Ext.extend(Ext.util.Observable, {
     },
 
     isLaTeX: function() {
-        return this.printerEl.getValue() == 'latex';
+        return this.printer == 'latex';
     },
 
     setSelection: function(sel) {
@@ -486,7 +574,7 @@ SymPy.Shell = Ext.extend(Ext.util.Observable, {
 
             break;
         case SymPy.Keys.ENTER:
-            var shiftEnter = (this.submitEl.getValue() == "shift-enter");
+            var shiftEnter = (this.submit == "shift-enter");
 
             if (event.shiftKey == shiftEnter) {
                 event.stopEvent();
@@ -601,7 +689,7 @@ SymPy.Shell = Ext.extend(Ext.util.Observable, {
 
             var data = {
                 statement: this.promptEl.getValue(),
-                printer: this.printerEl.getValue(),
+                printer: this.printer,
                 session: this.session || null
             };
 
@@ -653,7 +741,7 @@ SymPy.Shell = Ext.extend(Ext.util.Observable, {
 
             this.scrollToBottom();
 
-            if (this.printerEl.getValue() == 'latex') {
+            if (this.printer == 'latex') {
                 function postprocessLaTeX() {
                     Ext.get(element).removeClass('sympy-live-hidden');
                     this.scrollToBottom();
