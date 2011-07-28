@@ -89,6 +89,8 @@ SymPy.Shell = Ext.extend(Ext.util.Observable, {
 
     printerTypes: ['repr', 'str', 'ascii', 'unicode', 'latex'],
     submitTypes: ['enter', 'shift-enter'],
+    defaultPrinter: 'ascii',
+    defaultSubmit: 'enter',
     printer: null,
     submit: null,
     tabWidth: 4,
@@ -122,10 +124,10 @@ SymPy.Shell = Ext.extend(Ext.util.Observable, {
         var index;
 
         index = this.printerTypes.indexOf(config.printer);
-        this.printer = (index == -1) ? 'ascii' : config.printer;
+        this.printer = (index == -1) ? this.defaultPrinter : config.printer;
 
         index = this.submitTypes.indexOf(config.submit);
-        this.submit = (index == -1) ? 'shift-enter' : config.submit;
+        this.submit = (index == -1) ? this.defaultSubmit : config.submit;
 
         delete config.printer;
         delete config.submit;
