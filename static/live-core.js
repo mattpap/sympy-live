@@ -703,6 +703,7 @@ SymPy.Shell = Ext.extend(Ext.util.Observable, {
     evaluate: function() {
         if (!this.evaluating) {
             this.evaluating = true;
+            this.disablePrompt();
             this.promptEl.addClass('sympy-live-processing');
 
             var data = {
@@ -721,6 +722,7 @@ SymPy.Shell = Ext.extend(Ext.util.Observable, {
                 failure: function(response) {
                     this.clearValue();
                     this.updatePrompt();
+                    this.enablePrompt();
                     this.promptEl.removeClass('sympy-live-processing');
                     this.evaluating = false;
                 },
@@ -734,6 +736,7 @@ SymPy.Shell = Ext.extend(Ext.util.Observable, {
 
         this.clearValue();
         this.updatePrompt();
+        this.enablePrompt();
 
         this.history.push('');
         this.historyCursor = this.history.length - 1;
