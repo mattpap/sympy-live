@@ -58,7 +58,8 @@
 }
 
 .sympy-live-toolbar {
-    margin: 10px 0 0 0;
+    margin: 5px 0;
+    padding-top: 5px;
 }
 
 .sympy-live-separator {
@@ -130,6 +131,8 @@
     left: 0;
     position: absolute;
     visibility: hidden;
+    font-family: monospace;
+    font-size: 10pt;
     outline: none;
     display: inline-block;
     background-color: white;
