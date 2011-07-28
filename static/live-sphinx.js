@@ -19,9 +19,7 @@ SymPy.SphinxShell = Ext.extend(SymPy.Shell, {
             this.showShell();
         }, this);
 
-        var keyEvent = this.getKeyEvent();
-
-        Ext.get(document).on(keyEvent, function(event) {
+        Ext.get(document).on(this.keyEvent, function(event) {
             if (event.getKey() == SymPy.Keys.L && event.altKey && event.ctrlKey && event.shiftKey) {
                 event.stopEvent();
                 this.toggleShell();

@@ -135,6 +135,7 @@ SymPy.Shell = Ext.extend(Ext.util.Observable, {
             delete config.tabWidth;
         }
 
+        this.keyEvent = Ext.isOpera ? "keypress" : "keydown";
         SymPy.Shell.superclass.constructor.call(this, config);
     },
 
@@ -198,9 +199,7 @@ SymPy.Shell = Ext.extend(Ext.util.Observable, {
             this.promptEl.focus();
         }, this);
 
-        var keyEvent = this.getKeyEvent();
-
-        this.promptEl.on(keyEvent, function(event) {
+        this.promptEl.on(this.keyEvent, function(event) {
             this.preHandleKey(event);
 
             if (!this.handleKey(event)) {
@@ -254,6 +253,13 @@ SymPy.Shell = Ext.extend(Ext.util.Observable, {
 
         if (config.fn) {
             button.on('click', config.fn, config.scope || this);
+
+            button.on(this.keyEvent, function(event) {
+                if (event.getKey() == SymPy.Keys.ENTER) {
+                    event.stopEvent();
+                    config.fn.call(config.scope || this, event);
+                }
+            }, this);
         }
 
         return button;
@@ -391,10 +397,6 @@ SymPy.Shell = Ext.extend(Ext.util.Observable, {
             },
             scope: this
         });
-    },
-
-    getKeyEvent: function() {
-        return Ext.isOpera ? "keypress" : "keydown";
     },
 
     disablePrompt: function() {
