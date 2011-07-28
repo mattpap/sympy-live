@@ -115,7 +115,6 @@
     top: -2px;
     width: 0;
     height: 0;
-    margin-left: 5px;
     border-left: 4px solid transparent;
     border-right: 4px solid transparent;
     border-top: 4px solid #555;
@@ -124,6 +123,11 @@
 
 .sympy-live-button:hover .sympy-live-button-arrow {
     border-top-color: #333;
+}
+
+.sympy-live-button-image + .sympy-live-button-title,
+.sympy-live-button-title + .sympy-live-button-arrow {
+    margin-left: 5px;
 }
 
 .sympy-live-options {

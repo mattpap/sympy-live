@@ -42,21 +42,37 @@ SymPy.SphinxShell = Ext.extend(SymPy.Shell, {
             }, {
                 tag: 'span',
                 html: 'running on the'
-            }, {
-                tag: 'a',
-                href: 'http://code.google.com/appengine/',
-                target: '_blank',
-                html: 'Google App Engine'
             }]
         }, true);
 
-        this.hideEl = Ext.DomHelper.append(this.headerEl, {
+        var backends = [
+            {text: 'Google App Engine', value: 'gae', data: {url: 'http://code.google.com/appengine/'}}
+        ];
+
+        this.backendEl = Ext.DomHelper.append(this.headerEl, {
+            tag: 'a',
+            href: backends[0].data.url,
+            target: '_blank',
+            html: backends[0].text,
+        }, true);
+
+        this.addDropdown(this.headerEl, {
+            title: false,
+            buttonStyle: {padding: '0 3px'},
+            selected: 0,
+            items: backends,
+            fn: function(value, data, text) {
+                this.backendEl.dom.innerHTML = text;
+                this.backendEl.dom.href = data.url;
+            },
+            scope: this
+        });
+
+        Ext.DomHelper.append(this.headerEl, {
             tag: 'a',
             cls: 'sympy-live-hide',
             html: 'hide'
-        }, true);
-
-        this.hideEl.on('click', function(event) {
+        }, true).on('click', function(event) {
             this.hideShell();
         }, this);
 

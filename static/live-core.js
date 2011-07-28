@@ -228,6 +228,10 @@ SymPy.Shell = Ext.extend(Ext.util.Observable, {
             tabIndex: '0'
         }, true);
 
+        if (config.style) {
+            button.setStyle(config.style);
+        }
+
         if (config.image) {
             Ext.DomHelper.append(button, {
                 tag: 'img',
@@ -282,11 +286,22 @@ SymPy.Shell = Ext.extend(Ext.util.Observable, {
             tabIndex: '0'
         }, true);
 
-        var title = config.items[selected].text;
         var cls = 'sympy-live-selected';
+        var title;
+
+        if (Ext.isDefined(config.title)) {
+            if (title === false) {
+                title = null;
+            } else {
+                title = config.title;
+            }
+        } else {
+            title = config.items[selected].text;
+        }
 
         var button = this.addButton(el, {
             title: title,
+            style: config.buttonStyle,
             dropdown: true,
             fn: function(event) {
                 if (!options.isVisible()) {
@@ -332,8 +347,9 @@ SymPy.Shell = Ext.extend(Ext.util.Observable, {
                 options.child('.' + cls).removeClass(cls);
                 el.addClass(cls);
                 button.removeClass(cls);
-                button.child('.sympy-live-button-title').dom.innerHTML = item.text;
-                config.fn.call(config.scope || this, item.value);
+                var title = button.child('.sympy-live-button-title');
+                if (title) { title.dom.innerHTML = item.text; }
+                config.fn.call(config.scope || this, item.value, item.data, item.text);
             }, this);
         }, this);
 
