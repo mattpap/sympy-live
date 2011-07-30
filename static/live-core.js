@@ -110,7 +110,7 @@ SymPy.Shell = Ext.extend(Ext.util.Observable, {
             this.banner = config.banner;
             delete config.banner;
         } else {
-            var elem = Ext.get('banner');
+            var elem = Ext.get('sympy-live-banner');
 
             if (elem) {
                 this.banner = elem.dom.innerHTML;

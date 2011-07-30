@@ -162,3 +162,7 @@
 .sympy-live-options > div.sympy-live-selected {
     font-weight: bold;
 }
+
+#sympy-live-banner {
+    display: none;
+}

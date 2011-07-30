@@ -18,14 +18,6 @@
             .header {
                 width: 50em;
             }
-
-            .username {
-                font-weight: bold;
-            }
-
-            #banner {
-                display: none;
-            }
         </style>
 
         <script type="text/x-mathjax-config">
@@ -60,7 +52,7 @@
                     tabWidth: {{ tabWidth }}
                 });
 
-                var el = Ext.get('shell');
+                var el = Ext.get('sympy-live-shell');
                 shell.render(el);
             });
         </script>
@@ -73,7 +65,7 @@
             <a href="http://code.google.com/appengine/">Google App Engine</a>.
             <span style="float: right">
             {% if user %}
-                <span class="username">{{ user.nickname }}</span>
+                <span><b>{{ user.nickname }}></b></span>
                 (<a href="{{ logout_url }}">log out</a>)
             {% else %}
                 <a href="{{ login_url }}">log in</a>
@@ -81,8 +73,8 @@
             </span>
         </p>
 
-        <div id="banner">{{ banner }}</div>
-        <div id="shell"></div>
+        <div id="sympy-live-banner">{{ banner }}</div>
+        <div id="sympy-live-shell"></div>
 
         <h3>About</h3>
         <p>
