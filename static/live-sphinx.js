@@ -120,122 +120,131 @@ SymPy.SphinxShell = Ext.extend(SymPy.Shell, {
             return SymPy.getDOMText(obj).indexOf('...') === 0;
         }
 
+        function isShellPrompt(obj) {
+            return SymPy.getDOMText(obj).indexOf('$ ') === 0;
+        }
+
         var blocks = [];
 
-        if ((children.length > 0) && isPrompt(children[0])) {
-            var lines = [];
-            var line = [];
+        if (children.length > 0) {
+            var firstChild = children[0];
 
-            for (var i = 0; i < children.length; i++) {
-                var child = children[i];
-                line.push(child);
+            if (isPrompt(firstChild)) {
+                var lines = [];
+                var line = [];
 
-                if (/\n+$/.test(SymPy.getDOMText(child))) {
+                for (var i = 0; i < children.length; i++) {
+                    var child = children[i];
+                    line.push(child);
+
+                    if (/\n+$/.test(SymPy.getDOMText(child))) {
+                        lines.push(line);
+                        line = [];
+                    }
+                }
+
+                if (line.length) {
                     lines.push(line);
-                    line = [];
                 }
-            }
 
-            if (line.length) {
-                lines.push(line);
-            }
+                var elements = [];
+                var content = null;
 
-            var elements = [];
-            var content = null;
-
-            function cloneNodes(line) {
-                for (var i = 0; i < line.length; i++) {
-                    content.appendChild(line[i].cloneNode(true));
+                function cloneNodes(line) {
+                    for (var i = 0; i < line.length; i++) {
+                        content.appendChild(line[i].cloneNode(true));
+                    }
                 }
-            }
 
-            function copyNodes(line) {
-                for (var i = 0; i < line.length; i++) {
-                    elements.push(line[i]);
+                function copyNodes(line) {
+                    for (var i = 0; i < line.length; i++) {
+                        elements.push(line[i]);
+                    }
                 }
-            }
 
-            function pushContent() {
-                var child = content.lastChild,
-                    postfix = null;
+                function pushContent() {
+                    var child = content.lastChild,
+                        postfix = null;
 
-                if (SymPy.isTextNode(child)) {
-                    var text = SymPy.getDOMText(child);
+                    if (SymPy.isTextNode(child)) {
+                        var text = SymPy.getDOMText(child);
 
-                    if (/(\n+)$/.test(text)) {
-                        var newlines = RegExp.$1;
+                        if (/(\n+)$/.test(text)) {
+                            var newlines = RegExp.$1;
 
-                        if (newlines.length > 1) {
-                            content.removeChild(child);
+                            if (newlines.length > 1) {
+                                content.removeChild(child);
 
-                            var i = text.length - newlines.length + 1;
+                                var i = text.length - newlines.length + 1;
 
-                            var textPrefix = text.substring(0, i);
-                            var textPostfix = text.substring(i);
+                                var textPrefix = text.substring(0, i);
+                                var textPostfix = text.substring(i);
 
-                            content.appendChild(document.createTextNode(textPrefix));
-                            postfix = document.createTextNode(textPostfix);
+                                content.appendChild(document.createTextNode(textPrefix));
+                                postfix = document.createTextNode(textPostfix);
+                            }
                         }
                     }
-                }
 
-                elements.push(content);
+                    elements.push(content);
 
-                if (postfix) {
-                    elements.push(postfix);
-                }
-            }
-
-            for (var i = 0; i < lines.length; i++) {
-                var line = lines[i];
-
-                if (isPrompt(line[0])) {
-                    if (content) {
-                        pushContent();
-                        content = null;
+                    if (postfix) {
+                        elements.push(postfix);
                     }
+                }
 
-                    content = document.createElement('div');
-                    blocks.push(content);
-                    cloneNodes(line);
-                } else if (isContinuation(line[0])) {
-                    if (content) {
+                for (var i = 0; i < lines.length; i++) {
+                    var line = lines[i];
+
+                    if (isPrompt(line[0])) {
+                        if (content) {
+                            pushContent();
+                            content = null;
+                        }
+
+                        content = document.createElement('div');
+                        blocks.push(content);
                         cloneNodes(line);
+                    } else if (isContinuation(line[0])) {
+                        if (content) {
+                            cloneNodes(line);
+                        } else {
+                            copyNodes(line);
+                        }
                     } else {
+                        if (content) {
+                            pushContent();
+                            content = null;
+                        }
+
                         copyNodes(line);
                     }
-                } else {
-                    if (content) {
-                        pushContent();
-                        content = null;
-                    }
-
-                    copyNodes(line);
                 }
-            }
 
-            if (content) {
-                elements.push(content);
-            }
+                if (content) {
+                    elements.push(content);
+                }
 
-            while (node.childNodes.length >= 1) {
-                node.removeChild(node.firstChild);
-            }
+                while (node.childNodes.length >= 1) {
+                    node.removeChild(node.firstChild);
+                }
 
-            for (var i = 0; i < elements.length; i++) {
-                node.appendChild(elements[i]);
-            }
-        } else {
-            var block = document.createElement('div');
+                for (var i = 0; i < elements.length; i++) {
+                    node.appendChild(elements[i]);
+                }
+            // TODO: or maybe use proper highlighting and its recognition
+            } else if (!isShellPrompt(firstChild)) {
+                var block = document.createElement('div');
 
-            while (node.childNodes.length >= 1) {
-                var child = node.firstChild;
-                block.appendChild(child.cloneNode(true));
-                node.removeChild(child);
-            }
+                while (node.childNodes.length >= 1) {
+                    var child = node.firstChild;
+                    block.appendChild(child.cloneNode(true));
+                    node.removeChild(child);
+                }
 
-            node.appendChild(block);
-            blocks = [block]
+                node.appendChild(block);
+                blocks = [block]
+            }
         }
 
         Ext.each(blocks, function(block) {
