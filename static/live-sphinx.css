@@ -84,3 +84,7 @@ a.sympy-live-block:hover {
 .sympy-live-python-prompt:hover {
     cursor: pointer;
 }
+
+.sympy-live-edit {
+    width: 99%;
+}

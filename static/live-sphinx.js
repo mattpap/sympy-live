@@ -40,8 +40,20 @@ SymPy.SphinxShell = Ext.extend(SymPy.Shell, {
             } else if (key == SymPy.Keys.F && alt) {
                 event.stopEvent();
                 this.focusLastBlock();
+            } else if (key == SymPy.Keys.D && alt) {
+                event.stopEvent();
+                this.focusLastBlock();
+                this.editLastBlock();
+            } else if (key == SymPy.Keys.E && alt) {
+                event.stopEvent();
+                this.focusLastBlock();
+                this.evaluateLastBlock();
+            } else if (key == SymPy.Keys.ESC) {
+                event.stopEvent();
+                var edits = $(".sympy-live-edit");
+                edits.prev().show();
+                edits.remove();
             }
-
         }, this);
 
         this.headerEl = Ext.DomHelper.append(this.baseEl, {
@@ -152,8 +164,41 @@ SymPy.SphinxShell = Ext.extend(SymPy.Shell, {
     },
 
     focusLastBlock: function() {
+        if (!this.lastFocusedBlock) {
+            this.lastFocusedBlock = $(".sympy-live-block:first")[0];
+        }
+
+        $(this.lastFocusedBlock).focus();
+    },
+
+    evaluateLastBlock: function() {
         if (this.lastFocusedBlock) {
-            $(this.lastFocusedBlock).focus();
+            var last = this.lastFocusedBlock;
+            var code = this.codes[last.id];
+            this.evaluateCode(code);
+        }
+    },
+
+    editLastBlock: function() {
+        if (this.lastFocusedBlock) {
+            var last = $(this.lastFocusedBlock);
+            last.hide();
+
+            var code = this.codes[this.lastFocusedBlock.id];
+
+            var edit = Ext.DomHelper.insertAfter(this.lastFocusedBlock, {
+                tag: "textarea",
+                cls: 'sympy-live-edit',
+                rows: code.split("\n").length
+            });
+
+            $(edit).blur(function(event) {
+                $(this).remove();
+                last.show();
+            }, this);
+
+            $(edit).val(code);
+            $(edit).focus();
         }
     },
 
@@ -319,6 +364,8 @@ SymPy.SphinxShell = Ext.extend(SymPy.Shell, {
         var selector = 'div.highlight-python pre';
         var nodes = Ext.DomQuery.select(selector);
 
+        this.codes = {};
+
         Ext.each(nodes, function(node) {
             var el = Ext.get(node);
             var blocks;
@@ -345,6 +392,7 @@ SymPy.SphinxShell = Ext.extend(SymPy.Shell, {
                 }
 
                 code = code.replace(/\n+$/, "");
+                this.codes[block.id] = code;
 
                 if (prompt) {
                     var el = Ext.get(prompt);
