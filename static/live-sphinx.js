@@ -22,10 +22,26 @@ SymPy.SphinxShell = Ext.extend(SymPy.Shell, {
         var keyEvent = this.getKeyEvent();
 
         Ext.get(document).on(keyEvent, function(event) {
-            if (event.getKey() == SymPy.Keys.L && event.altKey && event.ctrlKey && event.shiftKey) {
+            var key = event.getKey();
+
+            var alt = event.altKey;
+            var ctrl = event.ctrlKey;
+            var shift = event.shiftKey;
+
+            if (key == SymPy.Keys.L && alt && ctrl && shift) {
                 event.stopEvent();
                 this.toggleShell();
+            } else if (key == SymPy.Keys.J && alt) {
+                event.stopEvent();
+                this.focusNextBlock();
+            } else if (key == SymPy.Keys.K && alt) {
+                event.stopEvent();
+                this.focusPrevBlock();
+            } else if (key == SymPy.Keys.F && alt) {
+                event.stopEvent();
+                this.focusLastBlock();
             }
+
         }, this);
 
         this.headerEl = Ext.DomHelper.append(this.baseEl, {
@@ -109,8 +125,41 @@ SymPy.SphinxShell = Ext.extend(SymPy.Shell, {
         }
     },
 
+    focusPrevBlock: function() {
+        var blocks = $(".sympy-live-block").toArray();
+
+        var last = this.lastFocusedBlock;
+        var prev = blocks[blocks.indexOf(last)-1];
+
+        if (prev) {
+            prev.focus();
+        } else {
+            blocks[blocks.length-1].focus();
+        }
+    },
+
+    focusNextBlock: function() {
+        var blocks = $(".sympy-live-block").toArray();
+
+        var last = this.lastFocusedBlock;
+        var next = blocks[blocks.indexOf(last)+1];
+
+        if (next) {
+            next.focus();
+        } else {
+            blocks[0].focus();
+        }
+    },
+
+    focusLastBlock: function() {
+        if (this.lastFocusedBlock) {
+            $(this.lastFocusedBlock).focus();
+        }
+    },
+
     processBlocks: function(node) {
         var children = node.childNodes;
+        var that = this;
 
         function isPrompt(obj) {
             return SymPy.getDOMText(obj).indexOf('>>>') === 0;
@@ -118,6 +167,27 @@ SymPy.SphinxShell = Ext.extend(SymPy.Shell, {
 
         function isContinuation(obj) {
             return SymPy.getDOMText(obj).indexOf('...') === 0;
+        }
+
+        var counter = 0;
+
+        function createBlock() {
+            var el = document.createElement('a');
+            el.href = "javascript://"
+
+            // XXX: this hack is required in Google Chrome because
+            // focus on click of <a> elements doesn't work at all.
+            $(el).click(function(event) {
+                if (!$('*:focus').length) {
+                    $(this).trigger('focus');
+                }
+            });
+
+            $(el).focus(function(event) {
+                that.lastFocusedBlock = this;
+            });
+
+            return el;
         }
 
         var blocks = [];
@@ -195,7 +265,7 @@ SymPy.SphinxShell = Ext.extend(SymPy.Shell, {
                         content = null;
                     }
 
-                    content = document.createElement('div');
+                    content = createBlock();
                     blocks.push(content);
                     cloneNodes(line);
                 } else if (isContinuation(line[0])) {
@@ -226,7 +296,7 @@ SymPy.SphinxShell = Ext.extend(SymPy.Shell, {
                 node.appendChild(elements[i]);
             }
         } else {
-            var block = document.createElement('div');
+            var block = createBlock();
 
             while (node.childNodes.length >= 1) {
                 var child = node.firstChild;
@@ -254,7 +324,7 @@ SymPy.SphinxShell = Ext.extend(SymPy.Shell, {
             var blocks;
 
             if (el.hasClass('sympy-live-element')) {
-                blocks = Ext.DomQuery.select('div.sympy-live-block', node);
+                blocks = Ext.DomQuery.select('.sympy-live-block', node);
             } else {
                 blocks = this.processBlocks(node);
             }

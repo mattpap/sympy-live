@@ -62,13 +62,21 @@
 }
 
 .sympy-live-block {
-    border: 1px solid transparent;
+    display: block;
+    outline: none;
 }
 
-.sympy-live-block:hover {
-    border: 1px solid silver;
+a.sympy-live-block:focus {
+    background-color: rgba(255, 255, 255, 0.5);
+    text-decoration: none;
 }
 
+a.sympy-live-block:hover {
+    background-color: white;
+    text-decoration: none;
+}
+
+.sympy-live-block:focus .sympy-live-block-toolbar,
 .sympy-live-block:hover .sympy-live-block-toolbar {
     visibility: visible;
 }
