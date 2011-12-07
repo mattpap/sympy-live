@@ -66,12 +66,12 @@
     outline: none;
 }
 
-a.sympy-live-block:focus {
+.sympy-live-block:focus {
     background-color: rgba(255, 255, 255, 0.5);
     text-decoration: none;
 }
 
-a.sympy-live-block:hover {
+.sympy-live-block:hover {
     background-color: white;
     text-decoration: none;
 }

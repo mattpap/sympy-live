@@ -50,8 +50,9 @@ SymPy.SphinxShell = Ext.extend(SymPy.Shell, {
                 this.evaluateLastBlock();
             } else if (key == SymPy.Keys.ESC) {
                 event.stopEvent();
+                this.hideShell();
                 var edits = $(".sympy-live-edit");
-                edits.prev().show();
+                edits.prev().removeClass("sympy-live-editing").show();
                 edits.remove();
             }
         }, this);
@@ -121,9 +122,6 @@ SymPy.SphinxShell = Ext.extend(SymPy.Shell, {
             return result;
         } else {
             switch (event.getKey()) {
-            case SymPy.Keys.ESC:
-                this.hideShell();
-                return true;
             case SymPy.Keys.H:
                 if (event.altKey && !event.ctrlKey) {
                     this.hideShell();
@@ -182,23 +180,27 @@ SymPy.SphinxShell = Ext.extend(SymPy.Shell, {
     editLastBlock: function() {
         if (this.lastFocusedBlock) {
             var last = $(this.lastFocusedBlock);
-            last.hide();
 
-            var code = this.codes[this.lastFocusedBlock.id];
+            if (!last.hasClass("sympy-live-editing")) {
+                last.addClass("sympy-live-editing");
+                last.hide();
 
-            var edit = Ext.DomHelper.insertAfter(this.lastFocusedBlock, {
-                tag: "textarea",
-                cls: 'sympy-live-edit',
-                rows: code.split("\n").length
-            });
+                var code = this.codes[this.lastFocusedBlock.id];
 
-            $(edit).blur(function(event) {
-                $(this).remove();
-                last.show();
-            }, this);
+                var edit = Ext.DomHelper.insertAfter(this.lastFocusedBlock, {
+                    tag: "textarea",
+                    cls: 'sympy-live-edit',
+                    rows: code.split("\n").length
+                });
 
-            $(edit).val(code);
-            $(edit).focus();
+                $(edit).blur(function(event) {
+                    last.removeClass("sympy-live-editing").show();
+                    $(this).remove();
+                }, this);
+
+                $(edit).val(code);
+                $(edit).focus();
+            }
         }
     },
 
@@ -423,14 +425,9 @@ SymPy.SphinxShell = Ext.extend(SymPy.Shell, {
                 }, this);
 
                 Ext.get(block).on('click', function(event) {
-                    if (!event.shiftKey && event.ctrlKey) {
-                        if (event.altKey) {
-                            event.stopEvent();
-                            this.evaluateCode(code);
-                        } else {
-                            event.stopEvent();
-                            this.copyCode(code);
-                        }
+                    if (!event.shiftKey && event.ctrlKey && !event.altKey) {
+                        event.stopEvent();
+                        this.editLastBlock();
                     }
                 }, this);
             }, this);
