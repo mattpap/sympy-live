@@ -447,6 +447,14 @@ SymPy.SphinxShell = Ext.extend(SymPy.Shell, {
     }
 });
 
+if (!window.MathJax) {
+    SymPy.loadScript(SymPy.MATHJAX_CDN, function() {
+        if (!window.MathJax) {
+            console.warning("MathJax in not available");
+        }
+    });
+}
+
 Ext.onReady(function() {
     var shell = new SymPy.SphinxShell({baseName: 'live-sphinx.js'});
     shell.render();

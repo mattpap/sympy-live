@@ -46,6 +46,8 @@ SymPy.Keys = {
     "'": 222, '"': 222
 };
 
+SymPy.MATHJAX_CDN = "http://cdn.mathjax.org/mathjax/latest/MathJax.js?config=TeX-AMS_HTML-full";
+
 SymPy.escapeHTML = function(str) {
     return str.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;');
 };
@@ -74,6 +76,20 @@ SymPy.getDOMText = function(node) {
 
 SymPy.isTextNode = function(node) {
     return node.nodeType === 3;
+};
+
+SymPy.loadScript = function(path, ready) {
+    var el = document.createElement("script");
+
+    el.setAttribute("type", "text/javascript");
+    el.setAttribute("src", path);
+
+    if (ready) {
+        el.onload = ready;
+    }
+
+    var head = document.getElementsByTagName("head")[0];
+    head.appendChild(el);
 };
 
 Ext.USE_NATIVE_JSON = true;
