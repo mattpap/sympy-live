@@ -1,7 +1,7 @@
 
 SymPy.SphinxShell = Ext.extend(SymPy.Shell, {
 
-    render: function(el) {
+    render: function(el, doit) {
         var el = el || Ext.getBody();
 
         this.baseEl = Ext.DomHelper.append(el, {
@@ -93,6 +93,10 @@ SymPy.SphinxShell = Ext.extend(SymPy.Shell, {
 
         SymPy.SphinxShell.superclass.render.call(this, this.baseEl);
         this.hideShell();
+
+        if (doit !== false) {
+            this.processElements();
+        }
     },
 
     hideShell: function() {
@@ -458,5 +462,4 @@ if (!window.MathJax) {
 Ext.onReady(function() {
     var shell = new SymPy.SphinxShell({baseName: 'live-sphinx.js'});
     shell.render();
-    shell.processElements();
 });
